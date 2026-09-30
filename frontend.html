@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DecodeLabs | Expense Tracker</title>
+<style>
+    /* ============================================================
+       STYLING: Industrial Safety Orange Theme (Page 6)
+       ============================================================ */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    :root {
+        --safety-orange: #ff6b1a;
+        --dark-bg: #1a1d23;
+        --panel-bg: #242830;
+        --panel-border: #2f3540;
+        --text-primary: #e8eaed;
+        --text-secondary: #9aa0a6;
+        --success: #34a853;
+        --error: #ea4335;
+    }
+
+    body {
+        font-family: 'Segoe UI', -apple-system, sans-serif;
+        background: var(--dark-bg);
+        color: var(--text-primary);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background-image:
+            radial-gradient(circle at 20% 20%, rgba(255,107,26,0.05) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(255,107,26,0.05) 0%, transparent 50%);
+    }
+
+    .container {
+        width: 100%;
+        max-width: 560px;
+    }
+
+    /* Header */
+    .header {
+        text-align: center;
+        margin-bottom: 28px;
+    }
+
+    .header .badge {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        color: var(--safety-orange);
+        border: 1px solid var(--safety-orange);
+        border-radius: 20px;
+        padding: 5px 14px;
+        margin-bottom: 14px;
+        text-transform: uppercase;
+    }
+
+    .header h1 {
+        font-size: 28px;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+    }
+
+    .header p {
+        color: var(--text-secondary);
+        font-size: 13px;
+        margin-top: 6px;
+    }
+
+    /* Total Display Panel */
+    .total-panel {
+        background: linear-gradient(135deg, var(--panel-bg), #1e222a);
+        border: 1px solid var(--panel-border);
+        border-radius: 16px;
+        padding: 32px 24px;
+        text-align: center;
+        margin-bottom: 20px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .total-panel::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, transparent, var(--safety-orange), transparent);
+    }
+
+    .total-label {
+        font-size: 11px;
+        letter-spacing: 2px;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+
+    .total-value {
+        font-size: 48px;
+        font-weight: 800;
+        color: var(--safety-orange);
+        font-variant-numeric: tabular-nums;
+        transition: transform 0.15s ease;
+    }
+
+    .total-value.pulse {
+        transform: scale(1.08);
+    }
+
+    .tx-count {
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-top: 8px;
+    }
+
+    /* Input Panel */
+    .input-panel {
+        background: var(--panel-bg);
+        border: 1px solid var(--panel-border);
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .input-row {
+        display: flex;
+        gap: 10px;
+    }
+
+    .input-wrapper {
+        flex: 1;
+        position: relative;
+    }
+
+    .input-wrapper::before {
+        content: '$';
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-secondary);
+        font-weight: 600;
+        font-size: 16px;
+    }
+
+    #expenseInput {
+        width: 100%;
+        background: var(--dark-bg);
+        border: 2px solid var(--panel-border);
+        border-radius: 10px;
+        padding: 14px 16px 14px 34px;
+        color: var(--text-primary);
+        font-size: 16px;
+        font-weight: 600;
+        outline: none;
+        transition: border-color 0.2s;
+        font-variant-numeric: tabular-nums;
+    }
+
+    #expenseInput:focus {
+        border-color: var(--safety-orange);
+    }
+
+    #expenseInput.error {
+        border-color: var(--error);
+        animation: shake 0.3s;
+    }
+
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-6px); }
+        75% { transform: translateX(6px); }
+    }
+
+    .btn {
+        border: none;
+        border-radius: 10px;
+        padding: 14px 22px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+        letter-spacing: 0.5px;
+    }
+
+    .btn-add {
+        background: var(--safety-orange);
+        color: #fff;
+    }
+
+    .btn-add:hover {
+        background: #ff8533;
+        transform: translateY(-1px);
+    }
+
+    .btn-add:active {
+        transform: translateY(0);
+    }
+
+    .btn-quit {
+        background: transparent;
+        color: var(--error);
+        border: 1px solid var(--error);
+        width: 100%;
+        margin-top: 12px;
+    }
+
+    .btn-quit:hover {
+        background: rgba(234, 67, 53, 0.1);
+    }
+
+    /* Message Banner */
+    .message {
+        padding: 12px 16px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 16px;
+        display: none;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .message.show { display: flex; }
+    .message.success {
+        background: rgba(52, 168, 83, 0.12);
+        color: var(--success);
+        border: 1px solid rgba(52, 168, 83, 0.3);
+    }
+    .message.error {
+        background: rgba(234, 67, 53, 0.12);
+        color: var(--error);
+        border: 1px solid rgba(234, 67, 53, 0.3);
+    }
+
+    /* Transaction History */
+    .history-panel {
+        background: var(--panel-bg);
+        border: 1px solid var(--panel-border);
+        border-radius: 16px;
+        padding: 20px;
+    }
+
+    .history-title {
+        font-size: 11px;
+        letter-spacing: 2px;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        margin-bottom: 14px;
+    }
+
+    .history-list {
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .history-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--panel-border);
+        font-size: 14px;
+    }
+
+    .history-item:last-child { border-bottom: none; }
+
+    .history-item .idx {
+        color: var(--text-secondary);
+        font-size: 12px;
+        width: 30px;
+    }
+
+    .history-item .amt {
+        font-weight: 700;
+        color: var(--safety-orange);
+    }
+
+    .history-item .running {
+        color: var(--text-secondary);
+        font-size: 12px;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .empty-state {
+        color: var(--text-secondary);
+        font-size: 13px;
+        text-align: center;
+        padding: 20px 0;
+    }
+
+    /* Scrollbar */
+    .history-list::-webkit-scrollbar { width: 6px; }
+    .history-list::-webkit-scrollbar-track { background: transparent; }
+    .history-list::-webkit-scrollbar-thumb {
+        background: var(--panel-border);
+        border-radius: 3px;
+    }
+</style>
+</head>
+<body>
+<div class="container">
+
+    <div class="header">
+        <div class="badge">DecodeLabs • Project 2</div>
+        <h1>Expense Tracker</h1>
+        <p>Input → Process → Output &nbsp;|&nbsp; State-Preserving Engine</p>
+    </div>
+
+    <!-- OUTPUT: The Display (Page 14) -->
+    <div class="total-panel">
+        <div class="total-label">Total Spent</div>
+        <div class="total-value" id="totalValue">$0.00</div>
+        <div class="tx-count" id="txCount">0 transactions</div>
+    </div>
+
+    <!-- INPUT: The Gate (Page 7) -->
+    <div class="input-panel">
+        <div class="message" id="message"></div>
+        <div class="input-row">
+            <div class="input-wrapper">
+                <input
+                    type="text"
+                    id="expenseInput"
+                    placeholder="Enter amount (e.g. 100)"
+                    autocomplete="off"
+                >
+            </div>
+            <button class="btn btn-add" id="addBtn">ADD</button>
+        </div>
+        <button class="btn btn-quit" id="quitBtn">KILL SWITCH — Quit</button>
+    </div>
+
+    <!-- Transaction History -->
+    <div class="history-panel">
+        <div class="history-title">Transaction History</div>
+        <div class="history-list" id="historyList">
+            <div class="empty-state">No transactions yet.</div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+/* ============================================================
+   FRONTEND LOGIC — The "View" layer
+   Communicates with the Python backend engine via HTTP.
+   ============================================================ */
+
+const API_BASE = 'http://localhost:8000';
+
+const totalValueEl = document.getElementById('totalValue');
+const txCountEl   = document.getElementById('txCount');
+const expenseInput = document.getElementById('expenseInput');
+const addBtn      = document.getElementById('addBtn');
+const quitBtn     = document.getElementById('quitBtn');
+const messageEl   = document.getElementById('message');
+const historyList = document.getElementById('historyList');
+
+let isShutdown = false;
+
+/* -------- Utility: show message banner -------- */
+function showMessage(text, type) {
+    messageEl.textContent = text;
+    messageEl.className = 'message show ' + type;
+    setTimeout(() => { messageEl.classList.remove('show'); }, 3500);
+}
+
+/* -------- Utility: update total display -------- */
+function updateTotal(value, count) {
+    totalValueEl.textContent = '$' + value.toFixed(2);
+    totalValueEl.classList.add('pulse');
+    setTimeout(() => totalValueEl.classList.remove('pulse'), 150);
+
+    txCountEl.textContent = count + (count === 1 ? ' transaction' : ' transactions');
+}
+
+/* -------- Utility: render transaction history -------- */
+function renderHistory(history) {
+    if (!history || history.length === 0) {
+        historyList.innerHTML = '<div class="empty-state">No transactions yet.</div>';
+        return;
+    }
+    historyList.innerHTML = history.slice().reverse().map(tx => `
+        <div class="history-item">
+            <span class="idx">#${tx.id}</span>
+            <span class="amt">+$${tx.amount.toFixed(2)}</span>
+            <span class="running">→ $${tx.running_total.toFixed(2)}</span>
+        </div>
+    `).join('');
+}
+
+/* -------- Fetch current status on load -------- */
+async function fetchStatus() {
+    try {
+        const res = await fetch(`${API_BASE}/api/status`);
+        const data = await res.json();
+        updateTotal(data.total, data.count);
+        renderHistory(data.history);
+    } catch (err) {
+        showMessage('Backend engine offline. Run backend.py first.', 'error');
+    }
+}
+
+/* -------- THE ACCUMULATOR: add an expense -------- */
+async function addExpense() {
+    if (isShutdown) {
+        showMessage('Session ended. Refresh to restart.', 'error');
+        return;
+    }
+
+    const raw = expenseInput.value.trim();
+    if (raw === '') {
+        expenseInput.classList.add('error');
+        setTimeout(() => expenseInput.classList.remove('error'), 300);
+        showMessage('Please enter an amount.', 'error');
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/api/add_expense`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ amount: raw })
+        });
+        const data = await res.json();
+
+        if (data.success && !data.shutdown) {
+            // SUCCESS: State updated
+            updateTotal(data.total, data.count);
+            showMessage(`Added $${data.added.toFixed(2)} → Total: $${data.total.toFixed(2)}`, 'success');
+            expenseInput.value = '';
+            expenseInput.focus();
+            fetchStatus(); // refresh history
+        } else if (data.shutdown) {
+            // KILL SWITCH triggered
+            isShutdown = true;
+            updateTotal(data.final_total, data.count);
+            showMessage(`🛑 ${data.message}`, 'success');
+            expenseInput.disabled = true;
+            addBtn.disabled = true;
+            quitBtn.disabled = true;
+        } else {
+            // INVALID INPUT: Defensive coding path
+            expenseInput.classList.add('error');
+            setTimeout(() => expenseInput.classList.remove('error'), 300);
+            showMessage(data.error || 'Invalid input.', 'error');
+            expenseInput.select();
+        }
+    } catch (err) {
+        showMessage('Connection failed. Is backend.py running?', 'error');
+    }
+}
+
+/* -------- KILL SWITCH -------- */
+async function triggerQuit() {
+    if (isShutdown) return;
+    try {
+        const res = await fetch(`${API_BASE}/api/add_expense`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ amount: 'quit' })
+        });
+        const data = await res.json();
+        isShutdown = true;
+        updateTotal(data.final_total, data.count);
+        showMessage(`🛑 ${data.message}`, 'success');
+        expenseInput.disabled = true;
+        addBtn.disabled = true;
+        quitBtn.disabled = true;
+    } catch (err) {
+        showMessage('Connection failed.', 'error');
+    }
+}
+
+/* -------- Event Listeners -------- */
+addBtn.addEventListener('click', addExpense);
+quitBtn.addEventListener('click', triggerQuit);
+expenseInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') addExpense();
+});
+
+/* -------- Init -------- */
+fetchStatus();
+expenseInput.focus();
+</script>
+</body>
+</html>
