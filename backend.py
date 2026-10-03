@@ -1,9 +1,3 @@
-"""
-DecodeLabs Project 2: Expense Tracker - Backend Engine
-Demonstrates: IPO Model, Accumulator Pattern, Defensive Coding,
-             State Preservation, Sentinel/Kill Switch Logic
-"""
-
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import json
 import os
@@ -19,7 +13,7 @@ import os
 total_spent = 0.0
 transaction_count = 0
 transaction_history = []
-
+ 
 
 class ExpenseTrackerHandler(BaseHTTPRequestHandler):
     """
